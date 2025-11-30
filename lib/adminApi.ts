@@ -54,6 +54,24 @@ export interface User {
   lastName: string;
   role: 'CUSTOMER' | 'ADMIN';
   isActive?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface CreateUserRequest {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  role: 'CUSTOMER' | 'ADMIN';
+}
+
+export interface UpdateUserRequest {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  password?: string;
+  role?: 'CUSTOMER' | 'ADMIN';
 }
 
 export interface PaginatedResponse<T> {
@@ -99,6 +117,25 @@ export async function updateProduct(id: string, productData: any): Promise<any> 
   if (!response.ok) {
     const error = await response.json().catch(() => ({ message: 'Failed to update product' }));
     throw new Error(error.message || 'Failed to update product');
+  }
+  
+  return await response.json();
+}
+
+export async function updateProductAttributes(
+  productId: string,
+  attributes: Array<{ attributeId: string; optionId: string }>
+): Promise<any> {
+  const response = await fetch(`${API_BASE_URL}/products/${productId}/attributes`, {
+    method: 'PUT',
+    headers: getAuthHeaders(),
+    credentials: 'include',
+    body: JSON.stringify({ attributes }),
+  });
+  
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ message: 'Failed to update product attributes' }));
+    throw new Error(error.message || 'Failed to update product attributes');
   }
   
   return await response.json();
@@ -291,6 +328,19 @@ export async function updateAttributeOption(optionId: string, optionData: { name
   return await response.json();
 }
 
+export async function deleteAttributeOption(optionId: string): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/attributes/options/${optionId}`, {
+    method: 'DELETE',
+    headers: getAuthHeaders(),
+    credentials: 'include',
+  });
+  
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ message: 'Failed to delete attribute option' }));
+    throw new Error(error.message || 'Failed to delete attribute option');
+  }
+}
+
 // Orders
 export async function fetchOrdersPaginated(
   page: number = 0,
@@ -351,5 +401,221 @@ export async function fetchOrderById(orderId: string): Promise<Order> {
   }
   
   return await response.json();
+}
+
+// Users CRUD
+export async function fetchUsers(): Promise<User[]> {
+  const response = await fetch(`${API_BASE_URL}/users`, {
+    credentials: 'include',
+  });
+  
+  if (!response.ok) {
+    throw new Error('Failed to fetch users');
+  }
+  
+  return await response.json();
+}
+
+export async function fetchUsersPaginated(
+  page: number = 0,
+  size: number = 20,
+  sort: string = 'createdAt,desc'
+): Promise<PaginatedResponse<User>> {
+  const response = await fetch(
+    `${API_BASE_URL}/users/paginated?page=${page}&size=${size}&sort=${sort}`,
+    {
+      credentials: 'include',
+    }
+  );
+  
+  if (!response.ok) {
+    throw new Error('Failed to fetch users');
+  }
+  
+  return await response.json();
+}
+
+export async function fetchUserById(userId: string): Promise<User> {
+  const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
+    credentials: 'include',
+  });
+  
+  if (!response.ok) {
+    throw new Error('Failed to fetch user');
+  }
+  
+  return await response.json();
+}
+
+export async function createUser(userData: CreateUserRequest): Promise<User> {
+  const response = await fetch(`${API_BASE_URL}/users`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    credentials: 'include',
+    body: JSON.stringify(userData),
+  });
+  
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ message: 'Failed to create user' }));
+    throw new Error(error.message || 'Failed to create user');
+  }
+  
+  return await response.json();
+}
+
+export async function updateUser(userId: string, userData: UpdateUserRequest): Promise<User> {
+  const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
+    method: 'PUT',
+    headers: getAuthHeaders(),
+    credentials: 'include',
+    body: JSON.stringify(userData),
+  });
+  
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ message: 'Failed to update user' }));
+    throw new Error(error.message || 'Failed to update user');
+  }
+  
+  return await response.json();
+}
+
+export async function deleteUser(userId: string): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
+    method: 'DELETE',
+    headers: getAuthHeaders(),
+    credentials: 'include',
+  });
+  
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ message: 'Failed to delete user' }));
+    throw new Error(error.message || 'Failed to delete user');
+  }
+}
+
+export async function checkUserExists(email: string): Promise<boolean> {
+  const response = await fetch(`${API_BASE_URL}/users/exists?email=${encodeURIComponent(email)}`, {
+    credentials: 'include',
+  });
+  
+  if (!response.ok) {
+    throw new Error('Failed to check user existence');
+  }
+  
+  return await response.json();
+}
+
+// Product Images / Media - Based on actual API response
+export interface FileMetadata {
+  publicId: string;
+  fileName: string;
+  originalFileName: string;
+  filePath: string;
+  fileSize: number;
+  contentType: string;
+  fileType: string;
+  createdAt: string;
+  downloadUrl: string;
+}
+
+export interface ProductImage {
+  publicId: string;
+  productPublicId: string;
+  fileMetadata: FileMetadata | null;
+  isPrimary: boolean;
+  displayOrder: number;
+  altText: string | null;
+  imageUrl: string;  // Full URL provided by API
+}
+
+export interface UpdateProductImageRequest {
+  isPrimary?: boolean;
+  displayOrder?: number;
+  altText?: string;
+}
+
+export async function fetchProductImages(productId: string): Promise<ProductImage[]> {
+  const response = await fetch(`${API_BASE_URL}/files/products/${productId}/images`, {
+    credentials: 'include',
+  });
+  
+  if (!response.ok) {
+    throw new Error('Failed to fetch product images');
+  }
+  
+  return await response.json();
+}
+
+export async function uploadProductImage(
+  productId: string,
+  file: File,
+  options?: { isPrimary?: boolean; displayOrder?: number; altText?: string }
+): Promise<ProductImage> {
+  const formData = new FormData();
+  formData.append('file', file);
+  if (options?.isPrimary !== undefined) {
+    formData.append('isPrimary', String(options.isPrimary));
+  }
+  if (options?.displayOrder !== undefined) {
+    formData.append('displayOrder', String(options.displayOrder));
+  }
+  if (options?.altText) {
+    formData.append('altText', options.altText);
+  }
+
+  const response = await fetch(`${API_BASE_URL}/files/products/${productId}/images`, {
+    method: 'POST',
+    credentials: 'include',
+    body: formData,
+  });
+  
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ message: 'Failed to upload image' }));
+    throw new Error(error.message || 'Failed to upload image');
+  }
+  
+  return await response.json();
+}
+
+export async function updateProductImage(
+  imageId: string,
+  data: UpdateProductImageRequest
+): Promise<ProductImage> {
+  const response = await fetch(`${API_BASE_URL}/files/images/${imageId}`, {
+    method: 'PATCH',
+    headers: getAuthHeaders(),
+    credentials: 'include',
+    body: JSON.stringify(data),
+  });
+  
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ message: 'Failed to update image' }));
+    throw new Error(error.message || 'Failed to update image');
+  }
+  
+  return await response.json();
+}
+
+export async function deleteProductImage(imageId: string): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/files/images/${imageId}`, {
+    method: 'DELETE',
+    credentials: 'include',
+  });
+  
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ message: 'Failed to delete image' }));
+    throw new Error(error.message || 'Failed to delete image');
+  }
+}
+
+export async function deleteAllProductImages(productId: string): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/files/products/${productId}/images`, {
+    method: 'DELETE',
+    credentials: 'include',
+  });
+  
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ message: 'Failed to delete images' }));
+    throw new Error(error.message || 'Failed to delete images');
+  }
 }
 

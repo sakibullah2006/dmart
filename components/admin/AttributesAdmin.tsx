@@ -13,6 +13,7 @@ import {
   fetchAttributeOptions,
   createAttributeOption,
   updateAttributeOption,
+  deleteAttributeOption,
   type Attribute,
   type AttributeOption,
 } from "@/lib/adminApi";
@@ -28,6 +29,14 @@ export function AttributesAdmin() {
   const [expandedAttributes, setExpandedAttributes] = useState<Set<string>>(new Set());
   const [attributeOptions, setAttributeOptions] = useState<Record<string, AttributeOption[]>>({});
   const [formData, setFormData] = useState({
+    name: "",
+    description: "",
+  });
+
+  // Option form state
+  const [showOptionForm, setShowOptionForm] = useState<string | null>(null);
+  const [editingOption, setEditingOption] = useState<AttributeOption | null>(null);
+  const [optionFormData, setOptionFormData] = useState({
     name: "",
     description: "",
   });
@@ -110,6 +119,50 @@ export function AttributesAdmin() {
     });
     setEditingAttribute(null);
     setShowForm(false);
+  };
+
+  // Option handlers
+  const handleOptionSubmit = async (e: React.FormEvent, attributeId: string) => {
+    e.preventDefault();
+    try {
+      if (editingOption) {
+        await updateAttributeOption(editingOption.id, optionFormData);
+      } else {
+        await createAttributeOption(attributeId, optionFormData);
+      }
+      await loadAttributeOptions(attributeId);
+      resetOptionForm();
+    } catch (error) {
+      alert(error instanceof Error ? error.message : "Failed to save option");
+    }
+  };
+
+  const handleOptionEdit = (option: AttributeOption, attributeId: string) => {
+    setEditingOption(option);
+    setOptionFormData({
+      name: option.name,
+      description: option.description || "",
+    });
+    setShowOptionForm(attributeId);
+  };
+
+  const handleOptionDelete = async (optionId: string, attributeId: string) => {
+    if (!confirm("Are you sure you want to delete this option?")) return;
+    try {
+      await deleteAttributeOption(optionId);
+      await loadAttributeOptions(attributeId);
+    } catch (error) {
+      alert(error instanceof Error ? error.message : "Failed to delete option");
+    }
+  };
+
+  const resetOptionForm = () => {
+    setOptionFormData({
+      name: "",
+      description: "",
+    });
+    setEditingOption(null);
+    setShowOptionForm(null);
   };
 
   const filteredAttributes = attributes.filter((a) =>
@@ -229,13 +282,110 @@ export function AttributesAdmin() {
                           <div className="space-y-2">
                             <div className="flex justify-between items-center">
                               <h4 className="font-medium text-sm text-foreground">Options</h4>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  resetOptionForm();
+                                  setShowOptionForm(attribute.id);
+                                }}
+                              >
+                                <Plus className="h-3 w-3 mr-1" />
+                                Add Option
+                              </Button>
                             </div>
+
+                            <AnimatePresence>
+                              {showOptionForm === attribute.id && (
+                                <motion.div
+                                  initial={{ opacity: 0, y: -10 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  exit={{ opacity: 0, y: -10 }}
+                                  className="p-3 bg-secondary/20 rounded-md border border-border"
+                                >
+                                  <form
+                                    onSubmit={(e) => handleOptionSubmit(e, attribute.id)}
+                                    className="space-y-3"
+                                  >
+                                    <div>
+                                      <Label htmlFor={`option-name-${attribute.id}`} className="text-xs">
+                                        Option Name *
+                                      </Label>
+                                      <Input
+                                        id={`option-name-${attribute.id}`}
+                                        value={optionFormData.name}
+                                        onChange={(e) =>
+                                          setOptionFormData({ ...optionFormData, name: e.target.value })
+                                        }
+                                        placeholder="e.g., Red, Large, 128GB"
+                                        required
+                                        className="h-8 text-sm"
+                                      />
+                                    </div>
+                                    <div>
+                                      <Label htmlFor={`option-desc-${attribute.id}`} className="text-xs">
+                                        Description
+                                      </Label>
+                                      <Input
+                                        id={`option-desc-${attribute.id}`}
+                                        value={optionFormData.description}
+                                        onChange={(e) =>
+                                          setOptionFormData({
+                                            ...optionFormData,
+                                            description: e.target.value,
+                                          })
+                                        }
+                                        placeholder="Optional description"
+                                        className="h-8 text-sm"
+                                      />
+                                    </div>
+                                    <div className="flex gap-2">
+                                      <Button type="submit" size="sm">
+                                        {editingOption ? "Update" : "Add"}
+                                      </Button>
+                                      <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={resetOptionForm}
+                                      >
+                                        Cancel
+                                      </Button>
+                                    </div>
+                                  </form>
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
+
                             {attributeOptions[attribute.id]?.map((option) => (
                               <div
                                 key={option.id}
-                                className="flex justify-between items-center p-2 bg-secondary/30 rounded"
+                                className="flex justify-between items-center p-2 bg-secondary/30 rounded group"
                               >
-                                <span className="text-sm text-foreground">{option.name}</span>
+                                <div className="flex-1">
+                                  <span className="text-sm text-foreground">{option.name}</span>
+                                  {option.description && (
+                                    <p className="text-xs text-muted-foreground">{option.description}</p>
+                                  )}
+                                </div>
+                                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-7 w-7 p-0"
+                                    onClick={() => handleOptionEdit(option, attribute.id)}
+                                  >
+                                    <Edit className="h-3 w-3" />
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-7 w-7 p-0 text-destructive hover:text-destructive"
+                                    onClick={() => handleOptionDelete(option.id, attribute.id)}
+                                  >
+                                    <Trash2 className="h-3 w-3" />
+                                  </Button>
+                                </div>
                               </div>
                             ))}
                             {(!attributeOptions[attribute.id] ||

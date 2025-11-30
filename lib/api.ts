@@ -2,8 +2,9 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/a
 
 export interface ProductImage {
   publicId: string;
-  fileName: string;
-  fileUrl: string;
+  fileName?: string;
+  fileUrl?: string;
+  imageUrl?: string;  // API returns this field
   isPrimary: boolean;
   displayOrder: number;
   altText?: string;
@@ -17,7 +18,32 @@ export interface Category {
   parentCategoryId?: string;
 }
 
-export interface ProductAttribute {
+// Product attribute as returned from API (GET response)
+export interface ProductAttributeResponse {
+  attribute?: {
+    publicId?: string;
+    id?: string;
+    name?: string;
+  };
+  attributeOption?: {
+    publicId?: string;
+    id?: string;
+    name?: string;
+  };
+  // Alternative flat structure
+  attributeId?: string;
+  attributeName?: string;
+  optionId?: string;
+  optionName?: string;
+  // Request structure format
+  options?: Array<{
+    optionId?: string;
+    id?: string;
+  }>;
+}
+
+// Product attribute for API requests (POST/PUT)
+export interface ProductAttributeRequest {
   attributeId: string;
   options: Array<{
     optionId: string;
@@ -35,7 +61,7 @@ export interface Product {
   salePrice?: number;
   stockQuantity: number;
   categories?: Category[];
-  attributes?: ProductAttribute[];
+  attributes?: ProductAttributeResponse[];
   images?: ProductImage[];
 }
 
@@ -49,6 +75,7 @@ export interface PaginatedResponse<T> {
 
 /**
  * Get the primary image URL for a product, or the first image if no primary is set
+ * Uses the Next.js proxy route to avoid CORS issues
  */
 export function getProductImageUrl(product: Product): string | null {
   if (!product.images || product.images.length === 0) {
@@ -58,17 +85,8 @@ export function getProductImageUrl(product: Product): string | null {
   // Find primary image, or use first image
   const primaryImage = product.images.find(img => img.isPrimary) || product.images[0];
   
-  if (primaryImage.fileUrl.startsWith('http')) {
-    return primaryImage.fileUrl;
-  }
-  
-  // If fileUrl is relative, construct full URL
-  if (primaryImage.fileUrl.startsWith('/')) {
-    return `${API_BASE_URL}${primaryImage.fileUrl}`;
-  }
-  
-  // Otherwise, use the image ID endpoint
-  return `${API_BASE_URL}/files/images/${primaryImage.publicId}`;
+  // Use the Next.js proxy route to avoid CORS issues
+  return `/api/images/${primaryImage.publicId}`;
 }
 
 export async function fetchProducts(

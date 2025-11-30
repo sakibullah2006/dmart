@@ -8,14 +8,23 @@ import { AttributesAdmin } from "./AttributesAdmin";
 import { OrdersAdmin } from "./OrdersAdmin";
 import { UsersAdmin } from "./UsersAdmin";
 import { PaymentsAdmin } from "./PaymentsAdmin";
-import { Package, FolderTree, Tag, ShoppingCart, Users, CreditCard } from "lucide-react";
+import { MediaAdmin } from "./MediaAdmin";
+import {
+  Package,
+  FolderTree,
+  Tag,
+  ShoppingCart,
+  Users,
+  CreditCard,
+  Image,
+} from "lucide-react";
 
 export function AdminTabs() {
   const [activeTab, setActiveTab] = useState("products");
 
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-      <TabsList className="grid w-full grid-cols-6 mb-6">
+      <TabsList className="grid w-full grid-cols-7 mb-6">
         <TabsTrigger value="products" className="flex items-center gap-2">
           <Package className="h-4 w-4" />
           Products
@@ -27,6 +36,10 @@ export function AdminTabs() {
         <TabsTrigger value="attributes" className="flex items-center gap-2">
           <Tag className="h-4 w-4" />
           Attributes
+        </TabsTrigger>
+        <TabsTrigger value="media" className="flex items-center gap-2">
+          <Image className="h-4 w-4" />
+          Media
         </TabsTrigger>
         <TabsTrigger value="orders" className="flex items-center gap-2">
           <ShoppingCart className="h-4 w-4" />
@@ -52,6 +65,10 @@ export function AdminTabs() {
 
       <TabsContent value="attributes" className="mt-0">
         <AttributesAdmin />
+      </TabsContent>
+
+      <TabsContent value="media" className="mt-0">
+        <MediaAdmin />
       </TabsContent>
 
       <TabsContent value="orders" className="mt-0">
