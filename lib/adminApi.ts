@@ -155,7 +155,7 @@ export async function deleteProduct(id: string): Promise<void> {
 }
 
 // Categories CRUD
-export async function createCategory(categoryData: { name: string; description?: string; parentCategoryId?: string }): Promise<any> {
+export async function createCategory(categoryData: { name: string; description?: string; parentCategoryId?: string; slug?: string }): Promise<any> {
   const response = await fetch(`${API_BASE_URL}/categories`, {
     method: 'POST',
     headers: getAuthHeaders(),
@@ -171,7 +171,7 @@ export async function createCategory(categoryData: { name: string; description?:
   return await response.json();
 }
 
-export async function updateCategory(id: string, categoryData: { name: string; description?: string; parentCategoryId?: string }): Promise<any> {
+export async function updateCategory(id: string, categoryData: { name: string; description?: string; parentCategoryId?: string; slug?: string }): Promise<any> {
   const response = await fetch(`${API_BASE_URL}/categories/${id}`, {
     method: 'PUT',
     headers: getAuthHeaders(),

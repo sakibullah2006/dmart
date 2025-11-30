@@ -19,6 +19,7 @@ import {
 import { Plus, Edit, Trash2, Search, ChevronDown, ChevronRight, Image as ImageIcon } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
+import { generateProductSlug } from "@/lib/slugUtils";
 
 // Get proxy image URL to avoid CORS issues
 function getProxyImageUrl(publicId: string): string {
@@ -59,11 +60,20 @@ export function ProductsAdmin() {
     // attributeSelections maps attributeId -> optionId (one option per attribute)
     attributeSelections: {} as Record<string, string>,
   });
+  const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
 
   useEffect(() => {
     loadProducts();
     loadMetadata();
   }, []);
+
+  // Auto-generate slug from name and SKU when creating (not editing)
+  useEffect(() => {
+    if (!editingProduct && !slugManuallyEdited && formData.name) {
+      const autoSlug = generateProductSlug(formData.name, formData.sku || undefined);
+      setFormData((prev) => ({ ...prev, slug: autoSlug }));
+    }
+  }, [formData.name, formData.sku, editingProduct, slugManuallyEdited]);
 
   const loadProducts = async () => {
     try {
@@ -107,6 +117,12 @@ export function ProductsAdmin() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      // Generate slug if empty (fallback)
+      let finalSlug = formData.slug;
+      if (!finalSlug && formData.name) {
+        finalSlug = generateProductSlug(formData.name, formData.sku || undefined);
+      }
+
       // Build attributes array from selections (only include attributes with selected options)
       const attributesForCreate = Object.entries(formData.attributeSelections)
         .filter(([, optionId]) => optionId) // Only include if an option is selected
@@ -128,7 +144,7 @@ export function ProductsAdmin() {
         const productPayload = {
           sku: formData.sku,
           name: formData.name,
-          slug: formData.slug,
+          slug: finalSlug || undefined,
           shortDescription: formData.shortDescription,
           description: formData.description,
           price: parseFloat(formData.price),
@@ -147,7 +163,7 @@ export function ProductsAdmin() {
         const productPayload = {
           sku: formData.sku,
           name: formData.name,
-          slug: formData.slug,
+          slug: finalSlug || undefined,
           shortDescription: formData.shortDescription,
           description: formData.description,
           price: parseFloat(formData.price),
@@ -214,6 +230,7 @@ export function ProductsAdmin() {
       categoryIds: product.categories?.map((c) => c.id) || [],
       attributeSelections,
     });
+    setSlugManuallyEdited(true); // When editing, don't auto-generate slug
     setShowCategories(true);
     setShowAttributes(true);
     setShowForm(true);
@@ -232,6 +249,7 @@ export function ProductsAdmin() {
       categoryIds: [],
       attributeSelections: {},
     });
+    setSlugManuallyEdited(false);
     setEditingProduct(null);
     setShowForm(false);
     setShowCategories(false);
@@ -328,7 +346,11 @@ export function ProductsAdmin() {
                     <Input
                       id="slug"
                       value={formData.slug}
-                      onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+                      onChange={(e) => {
+                        setSlugManuallyEdited(true);
+                        setFormData({ ...formData, slug: e.target.value });
+                      }}
+                      placeholder="Auto-generated from name and SKU"
                     />
                   </div>
 

@@ -10,6 +10,7 @@ import { createCategory, updateCategory, deleteCategory, fetchCategoriesPaginate
 import { Plus, Edit, Trash2, Search } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Category } from "@/lib/api";
+import { generateSlug } from "@/lib/slugUtils";
 
 export function CategoriesAdmin() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -21,11 +22,21 @@ export function CategoriesAdmin() {
     name: "",
     description: "",
     parentCategoryId: "",
+    slug: "",
   });
+  const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
 
   useEffect(() => {
     loadCategories();
   }, []);
+
+  // Auto-generate slug from name when creating (not editing)
+  useEffect(() => {
+    if (!editingCategory && !slugManuallyEdited && formData.name) {
+      const autoSlug = generateSlug(formData.name);
+      setFormData((prev) => ({ ...prev, slug: autoSlug }));
+    }
+  }, [formData.name, editingCategory, slugManuallyEdited]);
 
   const loadCategories = async () => {
     try {
@@ -42,10 +53,14 @@ export function CategoriesAdmin() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      // Generate slug if empty (fallback)
+      const finalSlug = formData.slug || (formData.name ? generateSlug(formData.name) : undefined);
+
       const categoryPayload = {
         name: formData.name,
         description: formData.description || undefined,
         parentCategoryId: formData.parentCategoryId || undefined,
+        slug: finalSlug || undefined,
       };
 
       if (editingCategory) {
@@ -77,7 +92,9 @@ export function CategoriesAdmin() {
       name: category.name,
       description: category.description || "",
       parentCategoryId: category.parentCategoryId || "",
+      slug: category.slug || "",
     });
+    setSlugManuallyEdited(true); // When editing, don't auto-generate slug
     setShowForm(true);
   };
 
@@ -86,7 +103,9 @@ export function CategoriesAdmin() {
       name: "",
       description: "",
       parentCategoryId: "",
+      slug: "",
     });
+    setSlugManuallyEdited(false);
     setEditingCategory(null);
     setShowForm(false);
   };
@@ -139,6 +158,19 @@ export function CategoriesAdmin() {
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       required
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="slug">Slug</Label>
+                    <Input
+                      id="slug"
+                      value={formData.slug}
+                      onChange={(e) => {
+                        setSlugManuallyEdited(true);
+                        setFormData({ ...formData, slug: e.target.value });
+                      }}
+                      placeholder="Auto-generated from name"
                     />
                   </div>
 
