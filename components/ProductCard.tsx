@@ -71,12 +71,12 @@ export function ProductCard({ product }: ProductCardProps) {
       </Link>
       <CardHeader className="pb-2">
         <Link href={`/products/${product.slug}`}>
-          <h3 className="font-semibold text-card-foreground line-clamp-1 hover:text-primary transition-colors">
+          <h3 className="font-semibold text-card-foreground line-clamp-2 hover:text-primary transition-colors min-h-[2.5rem]">
             {product.name}
           </h3>
         </Link>
         {product.shortDescription && (
-          <p className="text-sm text-muted-foreground line-clamp-2">{product.shortDescription}</p>
+          <p className="text-sm text-muted-foreground line-clamp-2 mt-1">{product.shortDescription}</p>
         )}
       </CardHeader>
       <CardContent className="pt-0">
