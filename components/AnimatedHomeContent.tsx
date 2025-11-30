@@ -39,49 +39,89 @@ export function AnimatedHomeContent({ products }: AnimatedHomeContentProps) {
     <main className="flex-1 flex flex-col items-center">
       {/* Hero Section */}
       <section className="relative overflow-hidden py-20 md:py-32 w-full bg-background">
+        {/* Animated gradient background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-primary/10 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-primary/5 to-primary/20" />
+        
+        {/* Animated lines */}
+        <div className="absolute inset-0 overflow-hidden">
+          <motion.div
+            className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent"
+            initial={{ x: "-100%" }}
+            animate={{ x: "100%" }}
+            transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+          />
+          <motion.div
+            className="absolute top-1/4 left-0 w-full h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent"
+            initial={{ x: "100%" }}
+            animate={{ x: "-100%" }}
+            transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+          />
+          <motion.div
+            className="absolute top-1/2 left-0 w-full h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent"
+            initial={{ x: "-100%" }}
+            animate={{ x: "100%" }}
+            transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
+          />
+          <motion.div
+            className="absolute top-3/4 left-0 w-full h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent"
+            initial={{ x: "100%" }}
+            animate={{ x: "-100%" }}
+            transition={{ duration: 3.5, repeat: Infinity, ease: "linear" }}
+          />
+        </div>
+        
         <BackgroundPattern variant="mesh" intensity="medium" />
         
         <div className="relative w-full max-w-7xl mx-auto px-4">
           <motion.div
-            className="mx-auto max-w-3xl text-center"
+            className="mx-auto max-w-4xl text-center"
             initial="hidden"
             animate="visible"
             variants={containerVariants}
           >
             <motion.div
               variants={itemVariants}
-              className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 backdrop-blur-sm px-4 py-2 text-sm text-primary shadow-sm ring-1 ring-primary/20"
+              className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-gradient-to-r from-primary/20 via-primary/10 to-primary/20 backdrop-blur-sm px-4 py-2 text-sm text-primary shadow-lg ring-1 ring-primary/20"
             >
               <Sparkles className="h-4 w-4 text-primary" />
-              <span className="font-medium">Exclusive Collection</span>
+              <span className="font-medium">Daffodil International University Exclusive</span>
             </motion.div>
             <motion.h1
               variants={itemVariants}
-              className="mb-6 text-5xl font-bold tracking-tight text-foreground md:text-6xl lg:text-7xl"
+              className="mb-6 text-5xl font-bold tracking-tight md:text-6xl lg:text-7xl"
             >
-              Discover
-              <span className="block text-primary">
-                Luxury
+              <span className="bg-gradient-to-r from-foreground via-primary to-foreground bg-clip-text text-transparent">
+                Welcome to dMart
+              </span>
+              <span className="block mt-2 bg-gradient-to-r from-primary via-primary/80 to-primary bg-clip-text text-transparent">
+                Your Exclusive E-Commerce Platform
               </span>
             </motion.h1>
             <motion.p
               variants={itemVariants}
-              className="mb-8 text-lg text-muted-foreground md:text-xl leading-relaxed"
+              className="mb-4 text-lg text-muted-foreground md:text-xl leading-relaxed"
             >
-              Experience the finest quality and craftsmanship. Curated for the discerning few.
+              Empowering the DIU community with quality products, exclusive deals, and seamless shopping experience.
+            </motion.p>
+            <motion.p
+              variants={itemVariants}
+              className="mb-8 text-base text-muted-foreground/80 md:text-lg"
+            >
+              Built by students, for students. Shop smart, shop exclusive.
             </motion.p>
             <motion.div
               variants={itemVariants}
               className="flex flex-col gap-4 sm:flex-row sm:justify-center"
             >
-              <Button size="lg" className="rounded-full px-8" asChild>
-                <Link href="/products" className="flex items-center gap-2">
-                  Shop Collection
+              <Button size="lg" className="rounded-full px-8 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg" asChild>
+                <Link href="/shop" className="flex items-center gap-2">
+                  Start Shopping
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
-              <Button size="lg" variant="outline" className="rounded-full px-8" asChild>
-                <Link href="/categories">Explore Categories</Link>
+              <Button size="lg" variant="outline" className="rounded-full px-8 border-primary/30 hover:bg-primary/10" asChild>
+                <Link href="/shop">Explore Products</Link>
               </Button>
             </motion.div>
           </motion.div>
@@ -100,10 +140,10 @@ export function AnimatedHomeContent({ products }: AnimatedHomeContentProps) {
           <div className="w-full max-w-7xl mx-auto px-4 min-w-[320px]">
             <motion.div variants={itemVariants} className="mb-12 text-center">
               <h2 className="mb-4 text-3xl font-bold text-foreground md:text-4xl">
-                Featured Masterpieces
+                Featured Products
               </h2>
               <p className="text-muted-foreground">
-                Handpicked selections just for you
+                Curated selections exclusively for the DIU community
               </p>
             </motion.div>
             <motion.div
@@ -125,12 +165,12 @@ export function AnimatedHomeContent({ products }: AnimatedHomeContentProps) {
                 variants={itemVariants}
                 className="mt-12 text-center"
               >
-                <Button variant="outline" size="lg" asChild>
-                  <Link href="/products">
-                    View All Products
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Link>
-                </Button>
+              <Button variant="outline" size="lg" asChild>
+                <Link href="/shop">
+                  View All Products
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
               </motion.div>
             )}
           </div>

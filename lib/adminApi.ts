@@ -16,34 +16,56 @@ export interface AttributeOption {
   isActive?: boolean;
 }
 
+export interface Address {
+  addressLine1: string;
+  addressLine2?: string;
+  city: string;
+  state: string;
+  postalCode: string;
+  country: string;
+}
+
 export interface Order {
   id: string;
   orderNumber: string;
+  userId?: string;
   status: 'PENDING' | 'CONFIRMED' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED';
   totalAmount: number;
+  shippingAddress?: Address;
+  billingAddress?: Address;
   items: OrderItem[];
   payment?: Payment;
   customerEmail: string;
   customerPhone?: string;
+  notes?: string | null;
   createdAt: string;
+  updatedAt?: string;
 }
 
 export interface OrderItem {
   id: string;
   productId: string;
   productName: string;
+  productSku?: string;
   quantity: number;
-  unitPrice: number;
+  price?: number; // API returns 'price' instead of 'unitPrice'
+  unitPrice?: number; // For backward compatibility
   subtotal: number;
 }
 
 export interface Payment {
   id: string;
-  orderId: string;
+  orderId?: string;
+  paymentMethod?: string;
+  method?: string; // For backward compatibility
+  paymentStatus?: 'PENDING' | 'COMPLETED' | 'FAILED' | 'REFUNDED';
+  status?: 'PENDING' | 'COMPLETED' | 'FAILED' | 'REFUNDED'; // For backward compatibility
   amount: number;
-  method: string;
-  status: 'PENDING' | 'COMPLETED' | 'FAILED' | 'REFUNDED';
   transactionId?: string;
+  cardLastFour?: string;
+  cardBrand?: string;
+  paymentGateway?: string;
+  paymentDate?: string;
   createdAt: string;
 }
 

@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "DMart - Quality Products at Great Prices",
-  description: "Discover quality products at unbeatable prices. Shop the latest trends and essentials.",
+  title: "dMart - Daffodil International University Exclusive E-Commerce",
+  description: "Daffodil International University's exclusive e-commerce platform. Built by students, for students. Quality products, exclusive deals, and seamless shopping experience for the DIU community.",
 };
 
 export default function RootLayout({

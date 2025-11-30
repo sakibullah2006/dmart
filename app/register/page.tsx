@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { motion } from "framer-motion";
@@ -38,7 +40,8 @@ const itemVariants = {
 };
 
 export default function RegisterPage() {
-  const { register: registerUser, loading } = useAuth();
+  const router = useRouter();
+  const { register: registerUser, loading, isAuthenticated } = useAuth();
   const {
     register,
     handleSubmit,
@@ -48,6 +51,13 @@ export default function RegisterPage() {
     resolver: zodResolver(registerSchema),
   });
 
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (!loading && isAuthenticated) {
+      router.push("/");
+    }
+  }, [isAuthenticated, loading, router]);
+
   const onSubmit = async (data: RegisterFormData) => {
     try {
       await registerUser(data.firstName, data.lastName, data.email, data.password);
@@ -56,6 +66,11 @@ export default function RegisterPage() {
       setFormError("root", { message: errorMessage });
     }
   };
+
+  // Show nothing while checking auth or redirecting
+  if (loading || isAuthenticated) {
+    return null;
+  }
 
   return (
     <div className="flex min-h-screen flex-col">

@@ -1,15 +1,21 @@
-# DMart - E-Commerce Frontend
+# dMart - Daffodil International University Exclusive E-Commerce Platform
 
-A modern, minimalistic e-commerce homepage built with Next.js, Tailwind CSS, and shadcn/ui. Features a beautiful bluish theme and integrates with a Spring Boot backend.
+A modern, minimalistic e-commerce platform built with Next.js, Tailwind CSS, and shadcn/ui. dMart is an exclusive e-commerce platform designed specifically for the Daffodil International University community, featuring a beautiful gradient theme and seamless integration with a Spring Boot backend.
+
+**Built by students, for students.**
 
 ## Features
 
-- 🎨 Modern, minimalistic design with a bluish theme
+- 🎨 Modern, minimalistic design with beautiful gradients and animated elements
 - 🛍️ Product showcase with featured products
 - 📱 Fully responsive layout
 - ⚡ Built with Next.js 16 and React 19
 - 🎯 shadcn/ui components for consistent UI
 - 🔌 API integration with Spring Boot backend
+- 🎓 Exclusive platform for Daffodil International University community
+- ✨ Animated hero section with gradient backgrounds
+- 🛒 Complete shopping cart and checkout functionality
+- 👤 User authentication and order management
 
 ## Getting Started
 

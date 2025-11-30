@@ -6,9 +6,13 @@ export function Footer() {
       <div className="w-full max-w-7xl mx-auto px-4 py-12 min-w-[320px]">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-primary">DMart</h3>
+            <h3 className="text-lg font-semibold text-primary">dMart</h3>
             <p className="text-sm text-muted-foreground">
-              Your trusted destination for quality products at great prices.
+              Daffodil International University's exclusive e-commerce platform. 
+              Built by students, for students. Quality products, exclusive deals, seamless shopping.
+            </p>
+            <p className="text-xs text-muted-foreground/70 mt-2">
+              Empowering the DIU community with innovative shopping solutions.
             </p>
           </div>
           <div className="space-y-4">
@@ -73,7 +77,10 @@ export function Footer() {
           </div>
         </div>
         <div className="mt-8 border-t border-border pt-8 text-center text-sm text-muted-foreground">
-          <p>&copy; {new Date().getFullYear()} DMart. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} dMart - Daffodil International University. All rights reserved.</p>
+          <p className="mt-2 text-xs text-muted-foreground/70">
+            An exclusive e-commerce platform for the DIU community
+          </p>
         </div>
       </div>
     </footer>

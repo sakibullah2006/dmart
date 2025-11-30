@@ -499,3 +499,173 @@ export async function clearCart(): Promise<void> {
   }
 }
 
+// Order API
+export interface OrderItem {
+  id: string;
+  productId: string;
+  productName: string;
+  productSku?: string;
+  quantity: number;
+  price?: number; // API returns 'price' instead of 'unitPrice'
+  unitPrice?: number; // For backward compatibility
+  subtotal?: number;
+}
+
+export interface Payment {
+  id: string;
+  orderId?: string;
+  paymentMethod?: string;
+  method?: string; // For backward compatibility
+  paymentStatus?: 'PENDING' | 'COMPLETED' | 'FAILED' | 'REFUNDED';
+  status?: 'PENDING' | 'COMPLETED' | 'FAILED' | 'REFUNDED'; // For backward compatibility
+  amount: number;
+  transactionId?: string;
+  cardLastFour?: string;
+  cardBrand?: string;
+  paymentGateway?: string;
+  paymentDate?: string;
+  createdAt: string;
+}
+
+export interface Order {
+  id: string;
+  orderNumber: string;
+  userId?: string;
+  status: 'PENDING' | 'CONFIRMED' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED';
+  totalAmount: number;
+  shippingAddress?: Address;
+  billingAddress?: Address;
+  items: OrderItem[];
+  payment?: Payment;
+  customerEmail: string;
+  customerPhone?: string;
+  notes?: string | null;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export async function fetchMyOrders(
+  page: number = 0,
+  size: number = 20,
+  sort: string = 'createdAt,desc'
+): Promise<PaginatedResponse<Order>> {
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/orders/my-orders/paginated?page=${page}&size=${size}&sort=${sort}`,
+      {
+        credentials: 'include',
+        cache: 'no-store',
+      }
+    );
+    
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Please login to view your orders');
+      }
+      throw new Error('Failed to fetch orders');
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching orders:', error);
+    throw error;
+  }
+}
+
+export interface Address {
+  addressLine1: string;
+  addressLine2?: string;
+  city: string;
+  state: string;
+  postalCode: string;
+  country: string;
+}
+
+export interface CreateOrderRequest {
+  shippingAddress: Address;
+  billingAddress: Address;
+  customerEmail: string;
+  customerPhone?: string;
+  notes?: string;
+  paymentMethod: 'CREDIT_CARD' | 'DEBIT_CARD' | 'PAYPAL' | 'BANK_TRANSFER' | 'CASH_ON_DELIVERY';
+}
+
+export interface ProcessPaymentRequest {
+  paymentDetails: {
+    cardNumber: string;
+    cardHolderName: string;
+    expiryDate: string; // Format: "MM/YYYY" or "YYYY-MM"
+    cvv: string;
+  };
+}
+
+export async function createOrder(request: CreateOrderRequest): Promise<Order> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/orders`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify(request),
+    });
+    
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ detail: 'Failed to create order' }));
+      throw new Error(error.detail || error.message || 'Failed to create order');
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error creating order:', error);
+    throw error;
+  }
+}
+
+export async function processPayment(orderId: string, request: ProcessPaymentRequest): Promise<Order> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/orders/${orderId}/pay`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify(request),
+    });
+    
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ detail: 'Payment failed' }));
+      throw new Error(error.detail || error.message || 'Payment failed');
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error processing payment:', error);
+    throw error;
+  }
+}
+
+export async function fetchOrderById(orderId: string): Promise<Order> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/orders/${orderId}`, {
+      credentials: 'include',
+      cache: 'no-store',
+    });
+    
+    if (!response.ok) {
+      if (response.status === 404) {
+        throw new Error('Order not found');
+      }
+      if (response.status === 401 || response.status === 403) {
+        throw new Error('Unauthorized to view this order');
+      }
+      throw new Error('Failed to fetch order');
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching order:', error);
+    throw error;
+  }
+}
+

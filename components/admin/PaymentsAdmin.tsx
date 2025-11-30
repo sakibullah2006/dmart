@@ -80,7 +80,10 @@ export function PaymentsAdmin() {
         {filteredOrders.map((order) => {
           if (!order.payment) return null;
           const payment = order.payment;
-          const StatusIcon = paymentStatusConfig[payment.status].icon;
+          // Support both paymentStatus and status for backward compatibility
+          const paymentStatus = (payment.paymentStatus || payment.status || 'PENDING') as keyof typeof paymentStatusConfig;
+          const statusConfig = paymentStatusConfig[paymentStatus] || paymentStatusConfig.PENDING;
+          const StatusIcon = statusConfig.icon;
 
           return (
             <motion.div
@@ -99,11 +102,11 @@ export function PaymentsAdmin() {
                           Order: {order.orderNumber}
                         </h3>
                         <div
-                          className={`flex items-center gap-1 ${paymentStatusConfig[payment.status].color}`}
+                          className={`flex items-center gap-1 ${statusConfig.color}`}
                         >
                           <StatusIcon className="h-4 w-4" />
                           <span className="text-sm font-medium">
-                            {paymentStatusConfig[payment.status].label}
+                            {statusConfig.label}
                           </span>
                         </div>
                       </div>
@@ -115,7 +118,7 @@ export function PaymentsAdmin() {
                           Amount: ${payment.amount.toFixed(2)}
                         </p>
                         <p className="text-sm text-muted-foreground">
-                          Method: {payment.method}
+                          Method: {payment.method || payment.paymentMethod || 'N/A'}
                         </p>
                         {payment.transactionId && (
                           <p className="text-sm text-muted-foreground">
@@ -129,7 +132,7 @@ export function PaymentsAdmin() {
                     </div>
                     <div className="flex flex-col gap-2">
                       <select
-                        value={payment.status}
+                        value={paymentStatus}
                         onChange={(e) => handlePaymentStatusChange(order.id, e.target.value)}
                         className="rounded-md border border-input bg-background px-3 py-2 text-sm"
                       >
