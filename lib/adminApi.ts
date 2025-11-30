@@ -1,0 +1,355 @@
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
+
+// Types
+export interface Attribute {
+  id: string;
+  name: string;
+  description?: string;
+  isActive?: boolean;
+}
+
+export interface AttributeOption {
+  id: string;
+  attributeId: string;
+  name: string;
+  description?: string;
+  isActive?: boolean;
+}
+
+export interface Order {
+  id: string;
+  orderNumber: string;
+  status: 'PENDING' | 'CONFIRMED' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED';
+  totalAmount: number;
+  items: OrderItem[];
+  payment?: Payment;
+  customerEmail: string;
+  customerPhone?: string;
+  createdAt: string;
+}
+
+export interface OrderItem {
+  id: string;
+  productId: string;
+  productName: string;
+  quantity: number;
+  unitPrice: number;
+  subtotal: number;
+}
+
+export interface Payment {
+  id: string;
+  orderId: string;
+  amount: number;
+  method: string;
+  status: 'PENDING' | 'COMPLETED' | 'FAILED' | 'REFUNDED';
+  transactionId?: string;
+  createdAt: string;
+}
+
+export interface User {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  role: 'CUSTOMER' | 'ADMIN';
+  isActive?: boolean;
+}
+
+export interface PaginatedResponse<T> {
+  content: T[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+}
+
+// Helper function to get auth headers
+function getAuthHeaders(): HeadersInit {
+  return {
+    'Content-Type': 'application/json',
+  };
+}
+
+// Products CRUD
+export async function createProduct(productData: any): Promise<any> {
+  const response = await fetch(`${API_BASE_URL}/products`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    credentials: 'include',
+    body: JSON.stringify(productData),
+  });
+  
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ message: 'Failed to create product' }));
+    throw new Error(error.message || 'Failed to create product');
+  }
+  
+  return await response.json();
+}
+
+export async function updateProduct(id: string, productData: any): Promise<any> {
+  const response = await fetch(`${API_BASE_URL}/products/${id}`, {
+    method: 'PUT',
+    headers: getAuthHeaders(),
+    credentials: 'include',
+    body: JSON.stringify(productData),
+  });
+  
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ message: 'Failed to update product' }));
+    throw new Error(error.message || 'Failed to update product');
+  }
+  
+  return await response.json();
+}
+
+export async function deleteProduct(id: string): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/products/${id}`, {
+    method: 'DELETE',
+    headers: getAuthHeaders(),
+    credentials: 'include',
+  });
+  
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ message: 'Failed to delete product' }));
+    throw new Error(error.message || 'Failed to delete product');
+  }
+}
+
+// Categories CRUD
+export async function createCategory(categoryData: { name: string; description?: string; parentCategoryId?: string }): Promise<any> {
+  const response = await fetch(`${API_BASE_URL}/categories`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    credentials: 'include',
+    body: JSON.stringify(categoryData),
+  });
+  
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ message: 'Failed to create category' }));
+    throw new Error(error.message || 'Failed to create category');
+  }
+  
+  return await response.json();
+}
+
+export async function updateCategory(id: string, categoryData: { name: string; description?: string; parentCategoryId?: string }): Promise<any> {
+  const response = await fetch(`${API_BASE_URL}/categories/${id}`, {
+    method: 'PUT',
+    headers: getAuthHeaders(),
+    credentials: 'include',
+    body: JSON.stringify(categoryData),
+  });
+  
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ message: 'Failed to update category' }));
+    throw new Error(error.message || 'Failed to update category');
+  }
+  
+  return await response.json();
+}
+
+export async function deleteCategory(id: string): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/categories/${id}`, {
+    method: 'DELETE',
+    headers: getAuthHeaders(),
+    credentials: 'include',
+  });
+  
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ message: 'Failed to delete category' }));
+    throw new Error(error.message || 'Failed to delete category');
+  }
+}
+
+export async function fetchCategoriesPaginated(
+  page: number = 0,
+  size: number = 20,
+  sort: string = 'name,asc'
+): Promise<PaginatedResponse<any>> {
+  const response = await fetch(
+    `${API_BASE_URL}/categories/paginated?page=${page}&size=${size}&sort=${sort}`,
+    {
+      credentials: 'include',
+    }
+  );
+  
+  if (!response.ok) {
+    throw new Error('Failed to fetch categories');
+  }
+  
+  return await response.json();
+}
+
+// Attributes CRUD
+export async function createAttribute(attributeData: { name: string; description?: string }): Promise<Attribute> {
+  const response = await fetch(`${API_BASE_URL}/attributes`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    credentials: 'include',
+    body: JSON.stringify(attributeData),
+  });
+  
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ message: 'Failed to create attribute' }));
+    throw new Error(error.message || 'Failed to create attribute');
+  }
+  
+  return await response.json();
+}
+
+export async function updateAttribute(id: string, attributeData: { name: string; description?: string; isActive?: boolean }): Promise<Attribute> {
+  const response = await fetch(`${API_BASE_URL}/attributes/${id}`, {
+    method: 'PUT',
+    headers: getAuthHeaders(),
+    credentials: 'include',
+    body: JSON.stringify(attributeData),
+  });
+  
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ message: 'Failed to update attribute' }));
+    throw new Error(error.message || 'Failed to update attribute');
+  }
+  
+  return await response.json();
+}
+
+export async function deleteAttribute(id: string): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/attributes/${id}`, {
+    method: 'DELETE',
+    headers: getAuthHeaders(),
+    credentials: 'include',
+  });
+  
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ message: 'Failed to delete attribute' }));
+    throw new Error(error.message || 'Failed to delete attribute');
+  }
+}
+
+export async function fetchAttributesPaginated(
+  page: number = 0,
+  size: number = 20,
+  sort: string = 'name,asc'
+): Promise<PaginatedResponse<Attribute>> {
+  const response = await fetch(
+    `${API_BASE_URL}/attributes/paginated?page=${page}&size=${size}&sort=${sort}`,
+    {
+      credentials: 'include',
+    }
+  );
+  
+  if (!response.ok) {
+    throw new Error('Failed to fetch attributes');
+  }
+  
+  return await response.json();
+}
+
+export async function fetchAttributeOptions(attributeId: string): Promise<AttributeOption[]> {
+  const response = await fetch(`${API_BASE_URL}/attributes/${attributeId}/options`, {
+    credentials: 'include',
+  });
+  
+  if (!response.ok) {
+    throw new Error('Failed to fetch attribute options');
+  }
+  
+  return await response.json();
+}
+
+export async function createAttributeOption(attributeId: string, optionData: { name: string; description?: string }): Promise<AttributeOption> {
+  const response = await fetch(`${API_BASE_URL}/attributes/${attributeId}/options`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    credentials: 'include',
+    body: JSON.stringify(optionData),
+  });
+  
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ message: 'Failed to create attribute option' }));
+    throw new Error(error.message || 'Failed to create attribute option');
+  }
+  
+  return await response.json();
+}
+
+export async function updateAttributeOption(optionId: string, optionData: { name: string; description?: string; isActive?: boolean }): Promise<AttributeOption> {
+  const response = await fetch(`${API_BASE_URL}/attributes/options/${optionId}`, {
+    method: 'PUT',
+    headers: getAuthHeaders(),
+    credentials: 'include',
+    body: JSON.stringify(optionData),
+  });
+  
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ message: 'Failed to update attribute option' }));
+    throw new Error(error.message || 'Failed to update attribute option');
+  }
+  
+  return await response.json();
+}
+
+// Orders
+export async function fetchOrdersPaginated(
+  page: number = 0,
+  size: number = 20,
+  sort: string = 'createdAt,desc'
+): Promise<PaginatedResponse<Order>> {
+  const response = await fetch(
+    `${API_BASE_URL}/orders/paginated?page=${page}&size=${size}&sort=${sort}`,
+    {
+      credentials: 'include',
+    }
+  );
+  
+  if (!response.ok) {
+    throw new Error('Failed to fetch orders');
+  }
+  
+  return await response.json();
+}
+
+export async function updateOrderStatus(orderId: string, status: string): Promise<Order> {
+  const response = await fetch(`${API_BASE_URL}/orders/${orderId}/status?status=${status}`, {
+    method: 'PATCH',
+    headers: getAuthHeaders(),
+    credentials: 'include',
+  });
+  
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ message: 'Failed to update order status' }));
+    throw new Error(error.message || 'Failed to update order status');
+  }
+  
+  return await response.json();
+}
+
+export async function updatePaymentStatus(orderId: string, paymentStatus: string): Promise<Order> {
+  const response = await fetch(`${API_BASE_URL}/orders/${orderId}/payment-status?paymentStatus=${paymentStatus}`, {
+    method: 'PATCH',
+    headers: getAuthHeaders(),
+    credentials: 'include',
+  });
+  
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ message: 'Failed to update payment status' }));
+    throw new Error(error.message || 'Failed to update payment status');
+  }
+  
+  return await response.json();
+}
+
+export async function fetchOrderById(orderId: string): Promise<Order> {
+  const response = await fetch(`${API_BASE_URL}/orders/${orderId}`, {
+    credentials: 'include',
+  });
+  
+  if (!response.ok) {
+    throw new Error('Failed to fetch order');
+  }
+  
+  return await response.json();
+}
+
