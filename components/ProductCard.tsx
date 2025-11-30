@@ -1,19 +1,49 @@
+"use client";
+
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ShoppingCart } from "lucide-react";
+import { ShoppingCart, Loader2 } from "lucide-react";
 import { Product, getProductImageUrl } from "@/lib/api";
+import { useCartStore } from "@/store/cartStore";
+import { useAuthStore } from "@/store/authStore";
 
 interface ProductCardProps {
   product: Product;
 }
 
 export function ProductCard({ product }: ProductCardProps) {
+  const [adding, setAdding] = useState(false);
+  const { addItem, openCart } = useCartStore();
+  const { isAuthenticated } = useAuthStore();
   const imageUrl = getProductImageUrl(product);
   const displayPrice = product.salePrice ?? product.price;
   const hasSale = product.salePrice && product.salePrice < product.price;
   const isOutOfStock = product.stockQuantity === 0;
+
+  const handleAddToCart = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!isAuthenticated) {
+      alert("Please login to add items to cart");
+      return;
+    }
+
+    if (isOutOfStock) return;
+
+    setAdding(true);
+    try {
+      await addItem(product.id, 1);
+      openCart(); // Open cart sidebar after adding
+    } catch (error) {
+      alert(error instanceof Error ? error.message : "Failed to add item to cart");
+    } finally {
+      setAdding(false);
+    }
+  };
 
   return (
     <Card className="group overflow-hidden transition-all hover:shadow-lg hover:border-primary/50">
@@ -67,13 +97,23 @@ export function ProductCard({ product }: ProductCardProps) {
         </div>
       </CardContent>
       <CardFooter className="pt-2">
-        <Button 
-          className="w-full" 
+        <Button
+          className="w-full"
           variant="default"
-          disabled={isOutOfStock}
+          disabled={isOutOfStock || adding}
+          onClick={handleAddToCart}
         >
-          <ShoppingCart className="mr-2 h-4 w-4" />
-          {isOutOfStock ? "Out of Stock" : "Add to Cart"}
+          {adding ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Adding...
+            </>
+          ) : (
+            <>
+              <ShoppingCart className="mr-2 h-4 w-4" />
+              {isOutOfStock ? "Out of Stock" : "Add to Cart"}
+            </>
+          )}
         </Button>
       </CardFooter>
     </Card>
